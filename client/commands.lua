@@ -1,5 +1,6 @@
 local wasProximityDisabledFromOverride = false
-disableProximityCycle = false
+local disableProximityCycle = false
+
 RegisterCommand('setvoiceintent', function(source, args)
 	if GetConvarInt('voice_allowSetIntent', 1) == 1 then
 		local intent = args[1]
@@ -10,45 +11,49 @@ RegisterCommand('setvoiceintent', function(source, args)
 		end
 		LocalPlayer.state:set('voiceIntent', intent, true)
 	end
-end)
+end, false)
+
 TriggerEvent('chat:addSuggestion', '/setvoiceintent', 'Sets the players voice intent', {
 	{
 		name = "intent",
 		help = "speech is default and enables noise suppression & high pass filter, music disables both of these."
-	},
+	}
 })
 
--- TODO: Better implementation of this?
 RegisterCommand('vol', function(_, args)
 	if not args[1] then return end
-	setVolume(tonumber(args[1]))
-end)
+    ---@diagnostic disable-next-line: param-type-mismatch
+	SetVolume(tonumber(args[1]))
+end, false)
+
 TriggerEvent('chat:addSuggestion', '/vol', 'Sets the radio/phone volume', {
 	{ name = "volume", help = "A range between 1-100 on how loud you want them to be" },
 })
 
 exports('setAllowProximityCycleState', function(state)
-	type_check({ state, "boolean" })
+	Shared.checkTypes({ state, "boolean" })
 	disableProximityCycle = state
 end)
 
-function setProximityState(proximityRange, isCustom)
-	local voiceModeData = Cfg.voiceModes[mode]
+function SetProximityState(proximityRange, isCustom)
+	local voiceModeData = Config.voiceModes[Client.mode]
 	MumbleSetTalkerProximity(proximityRange + 0.0)
+
 	LocalPlayer.state:set('proximity', {
-		index = mode,
+		index = Client.mode,
 		distance = proximityRange,
 		mode = isCustom and "Custom" or voiceModeData[2],
 	}, true)
-	sendUIMessage({
-		-- JS expects this value to be - 1, "custom" voice is on the last index
-		voiceMode = isCustom and #Cfg.voiceModes or mode - 1
+
+	SendUIMessage({
+		voiceMode = isCustom and #Config.voiceModes or Client.mode - 1
 	})
 end
 
 exports("overrideProximityRange", function(range, disableCycle)
-	type_check({ range, "number" })
-	setProximityState(range, true)
+	Shared.checkTypes({ range, "number" })
+	SetProximityState(range, true)
+
 	if disableCycle then
 		disableProximityCycle = true
 		wasProximityDisabledFromOverride = true
@@ -56,28 +61,28 @@ exports("overrideProximityRange", function(range, disableCycle)
 end)
 
 exports("clearProximityOverride", function()
-	local voiceModeData = Cfg.voiceModes[mode]
-	setProximityState(voiceModeData[1], false)
+	local voiceModeData = Config.voiceModes[Client.mode]
+	SetProximityState(voiceModeData[1], false)
+
 	if wasProximityDisabledFromOverride then
 		disableProximityCycle = false
 	end
 end)
 
 RegisterCommand('cycleproximity', function()
-	-- Proximity is either disabled, or manually overwritten.
 	if GetConvarInt('voice_enableProximityCycle', 1) ~= 1 or disableProximityCycle then return end
-	local newMode = mode + 1
+	local newMode = Client.mode + 1
 
-	-- If we're within the range of our voice modes, allow the increase, otherwise reset to the first state
-	if newMode <= #Cfg.voiceModes then
-		mode = newMode
+	if newMode <= #Config.voiceModes then
+		Client.mode = newMode
 	else
-		mode = 1
+		Client.mode = 1
 	end
 
-	setProximityState(Cfg.voiceModes[mode][1], false)
-	TriggerEvent('pma-voice:setTalkingMode', mode)
+	SetProximityState(Config.voiceModes[Client.mode][1], false)
+	TriggerEvent('pma-voice:setTalkingMode', Client.mode)
 end, false)
-if gameVersion == 'fivem' then
+
+if Shared.gameVersion == 'fivem' then
 	RegisterKeyMapping('cycleproximity', 'Cycle Proximity', 'keyboard', GetConvar('voice_defaultCycle', 'F11'))
 end

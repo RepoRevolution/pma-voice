@@ -1,55 +1,56 @@
 local callChannel = 0
 
 RegisterNetEvent('pma-voice:syncCallData', function(callTable, channel)
-	callData = callTable
-	handleRadioAndCallInit()
+	Client.callData = callTable
+	HandleRadioAndCallInit()
 end)
 
 RegisterNetEvent('pma-voice:addPlayerToCall', function(plySource)
-	toggleVoice(plySource, true, 'call')
-	callData[plySource] = true
+	ToggleVoice(plySource, true, 'call')
+	Client.callData[plySource] = true
 end)
 
 RegisterNetEvent('pma-voice:removePlayerFromCall', function(plySource)
-	if plySource == playerServerId then
-		for tgt, _ in pairs(callData) do
-			if tgt ~= playerServerId then
-				toggleVoice(tgt, false, 'call')
+	if plySource == Client.serverId then
+		for tgt, _ in pairs(Client.callData) do
+			if tgt ~= Client.serverId then
+				ToggleVoice(tgt, false, 'call')
 			end
 		end
-		callData = {}
-		MumbleClearVoiceTargetPlayers(voiceTarget)
-		addVoiceTargets((radioPressed and isRadioEnabled()) and radioData or {}, callData)
+		Client.callData = {}
+		MumbleClearVoiceTargetPlayers(Shared.voiceTarget)
+		AddVoiceTargets((Client.radioPressed and IsRadioEnabled()) and Client.radioData or {}, Client.callData)
 	else
-		callData[plySource] = nil
-		toggleVoice(plySource, radioData[plySource], 'call')
+		Client.callData[plySource] = nil
+		ToggleVoice(plySource, Client.radioData[plySource], 'call')
 		if MumbleIsPlayerTalking(PlayerId()) then
-			MumbleClearVoiceTargetPlayers(voiceTarget)
-			addVoiceTargets((radioPressed and isRadioEnabled()) and radioData or {}, callData)
+			MumbleClearVoiceTargetPlayers(Shared.voiceTarget)
+			AddVoiceTargets((Client.radioPressed and IsRadioEnabled()) and Client.radioData or {}, Client.callData)
 		end
 	end
 end)
 
-function setCallChannel(channel)
+function SetCallChannel(channel)
 	if GetConvarInt('voice_enableCalls', 1) ~= 1 then return end
 	TriggerServerEvent('pma-voice:setPlayerCall', channel)
 	callChannel = channel
-	sendUIMessage({
+
+	SendUIMessage({
 		callInfo = channel
 	})
 end
-
-exports('setCallChannel', setCallChannel)
-exports('SetCallChannel', setCallChannel)
+exports('setCallChannel', SetCallChannel)
+exports('SetCallChannel', SetCallChannel)
 
 exports('addPlayerToCall', function(_call)
 	local call = tonumber(_call)
 	if call then
-		setCallChannel(call)
+		SetCallChannel(call)
 	end
 end)
+
 exports('removePlayerFromCall', function()
-	setCallChannel(0)
+	SetCallChannel(0)
 end)
 
 RegisterNetEvent('pma-voice:clSetPlayerCall', function(_callChannel)

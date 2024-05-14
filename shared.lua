@@ -1,15 +1,14 @@
-Cfg = {}
+Config = {}
+Shared = {}
+Shared.voiceTarget = 1
+Shared.gameVersion = GetGameName()
 
-voiceTarget = 1
-
-gameVersion = GetGameName()
-
--- these are just here to satisfy linting
 if not IsDuplicityVersion() then
+    Client = {}
 	LocalPlayer = LocalPlayer
-	playerServerId = GetPlayerServerId(PlayerId())
+	Client.serverId = GetPlayerServerId(PlayerId())
 
-	if gameVersion == "redm" then
+	if Shared.gameVersion == "redm" then
 		function CreateAudioSubmix(name)
 			return Citizen.InvokeNative(0x658d2bc8, name, Citizen.ResultAsInteger())
 		end
@@ -41,65 +40,85 @@ if not IsDuplicityVersion() then
 		end
 	end
 end
+
 Player = Player
 Entity = Entity
 
 if GetConvar('voice_useNativeAudio', 'false') == 'true' then
-	-- native audio distance seems to be larger then regular gta units
-	Cfg.voiceModes = {
+	Config.voiceModes = {
 		{ 1.5, "Whisper" }, -- Whisper speech distance in gta distance units
 		{ 3.0, "Normal" },  -- Normal speech distance in gta distance units
 		{ 6.0, "Shouting" } -- Shout speech distance in gta distance units
 	}
 else
-	Cfg.voiceModes = {
+	Config.voiceModes = {
 		{ 3.0,  "Whisper" }, -- Whisper speech distance in gta distance units
 		{ 7.0,  "Normal" },  -- Normal speech distance in gta distance units
 		{ 15.0, "Shouting" } -- Shout speech distance in gta distance units
 	}
 end
 
-logger = {
+---@param func function
+local function functionName(func)
+    local info = debug.getinfo(func, 'n')
+    return info and info.name or 'unknown function'
+end
+
+---@param level number
+---@param ... any
+local function consoleLog(level, ...)
+    local args = {...}
+    local formattedArgs = {}
+    if type(level) ~= 'number' then return end
+
+    table.insert(formattedArgs,
+        (
+            level == 1 and '[^2INFO^7]' or level == 2 and '[^9DEBUG^7]'
+            or level == 3 and '[^6WARNING^7]' or '[^8ERROR^7]'
+        )
+    )
+
+    for i = 1, #args do
+        local arg = args[i]
+        local argType = type(arg)
+
+        local formattedArg
+        if argType == 'table' then
+            formattedArg = json.encode(arg)
+        elseif argType == 'function' then
+            formattedArg = functionName(arg)
+        elseif argType == 'nil' then
+            formattedArg = 'NULL'
+        else formattedArg = tostring(arg) end
+
+        table.insert(formattedArgs, formattedArg)
+    end
+
+    print(table.concat(formattedArgs, ' '))
+end
+function LOG(level, ...) consoleLog(level, ...) end
+
+Logger = {
 	log = function(message, ...)
-		print((message):format(...))
+		LOG(1, message:format(...))
 	end,
 	info = function(message, ...)
 		if GetConvarInt('voice_debugMode', 0) >= 1 then
-			print(('[info] ' .. message):format(...))
+            LOG(2, message:format(...))
 		end
 	end,
 	warn = function(message, ...)
-		print(('[^1WARNING^7] ' .. message):format(...))
+        LOG(3, message:format(...))
 	end,
 	error = function(message, ...)
-		error((message):format(...))
+        LOG(4, message:format(...))
 	end,
 	verbose = function(message, ...)
 		if GetConvarInt('voice_debugMode', 0) >= 4 then
-			print(('[verbose] ' .. message):format(...))
+            LOG(2, message:format(...))
 		end
 	end,
 }
-
-
-function tPrint(tbl, indent)
-	indent = indent or 0
-	for k, v in pairs(tbl) do
-		local tblType = type(v)
-		local formatting = string.rep("  ", indent) .. k .. ": "
-
-		if tblType == "table" then
-			print(formatting)
-			tPrint(v, indent + 1)
-		elseif tblType == 'boolean' then
-			print(formatting .. tostring(v))
-		elseif tblType == "function" then
-			print(formatting .. tostring(v))
-		else
-			print(formatting .. v)
-		end
-	end
-end
 
 local function types(args)
 	local argType = type(args[1])
@@ -112,9 +131,8 @@ local function types(args)
 	return false, argType
 end
 
---- does a type check and errors if an invalid type is sent
----@param ... table a table with the variable being the first argument and the expected type being the second
-function type_check(...)
+---@param ... table
+function Shared.checkTypes(...)
 	local vars = { ... }
 	for i = 1, #vars do
 		local var = vars[i]

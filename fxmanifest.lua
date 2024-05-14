@@ -1,16 +1,24 @@
+--[[ FX Information ]] --
+fx_version 'cerulean'
+use_experimental_fxv2_oal 'yes'
+lua54 'yes'
 game 'common'
 
-fx_version 'cerulean'
-author 'AvarianKnight'
+--[[ Resource Information ]] --
+name 'rr_vehkeys'
+author 'AvarianKnight & RepoRevolution | MineCop'
+version '1.0.0'
 description 'VOIP built using FiveM\'s built in mumble.'
 
-dependencies {
-	'/onesync',
-}
-
-lua54 'yes'
+--[[ Manifest ]] --
+dependency '/onesync'
 
 shared_script 'shared.lua'
+
+server_scripts {
+	'server/**/*.lua',
+	'server/**/*.js'
+}
 
 client_scripts {
 	'client/utils/*',
@@ -20,11 +28,6 @@ client_scripts {
 	'client/init/submix.lua',
 	'client/module/*.lua',
 	'client/*.lua',
-}
-
-server_scripts {
-	'server/**/*.lua',
-	'server/**/*.js'
 }
 
 files {
