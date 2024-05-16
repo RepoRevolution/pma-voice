@@ -7,6 +7,8 @@ function IsRadioEnabled()
 	return Client.radioEnabled and LocalPlayer.state.disableRadio == 0
 end
 
+if GetConvarInt('voice_enableRadios', 1) ~= 1 then return end
+
 ---@param radioTable table the table of the current players on the radio
 ---@param localPlyRadioName string the local players name
 local function syncRadioData(radioTable, localPlyRadioName)
@@ -158,7 +160,7 @@ RegisterCommand('+radiotalk', function()
 	if GetConvarInt('voice_enableRadios', 1) ~= 1 then return end
 	if isDead() then return end
 	if not IsRadioEnabled() then return end
-	if not Client.Client.radioPressed then
+	if not Client.radioPressed then
 		if radioChannel > 0 then
 			Logger.info('[radio] Start broadcasting, update targets and notify server.')
 			AddVoiceTargets(Client.radioData, Client.callData)

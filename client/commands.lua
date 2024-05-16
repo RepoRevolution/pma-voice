@@ -13,22 +13,11 @@ RegisterCommand('setvoiceintent', function(source, args)
 	end
 end, false)
 
-TriggerEvent('chat:addSuggestion', '/setvoiceintent', 'Sets the players voice intent', {
-	{
-		name = "intent",
-		help = "speech is default and enables noise suppression & high pass filter, music disables both of these."
-	}
-})
-
 RegisterCommand('vol', function(_, args)
 	if not args[1] then return end
     ---@diagnostic disable-next-line: param-type-mismatch
 	SetVolume(tonumber(args[1]))
 end, false)
-
-TriggerEvent('chat:addSuggestion', '/vol', 'Sets the radio/phone volume', {
-	{ name = "volume", help = "A range between 1-100 on how loud you want them to be" },
-})
 
 exports('setAllowProximityCycleState', function(state)
 	Shared.checkTypes({ state, "boolean" })

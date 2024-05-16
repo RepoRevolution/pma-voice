@@ -104,17 +104,13 @@ local lastTalkingStatus = false
 local lastRadioStatus = false
 local voiceState = "proximity"
 CreateThread(function()
-	TriggerEvent('chat:addSuggestion', '/muteply', 'Mutes the player with the specified id', {
-		{ name = "player id", help = "the player to toggle mute" },
-		{ name = "duration",  help = "(opt) the duration the mute in seconds (default: 900)" }
-	})
 	while true do
 		while not MumbleIsConnected() do
 			Wait(100)
 		end
 
 		if GetConvarInt('voice_enableUi', 1) == 1 then
-			local curTalkingStatus = MumbleIsPlayerTalking(PlayerId()) == 1
+			local curTalkingStatus = MumbleIsPlayerTalking(PlayerId())
 			if lastRadioStatus ~= Client.radioPressed or lastTalkingStatus ~= curTalkingStatus then
 				lastRadioStatus = Client.radioPressed
 				lastTalkingStatus = curTalkingStatus

@@ -68,7 +68,7 @@ export default {
 				voice.usingRadio = data.usingRadio;
 			}
 			
-			if ((data.talking !== undefined) && !voice.usingRadio) {
+			if ((data.talking !== undefined)) {
 				voice.talking = data.talking;
 			}
 

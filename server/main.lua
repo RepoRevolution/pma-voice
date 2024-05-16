@@ -15,17 +15,18 @@ end
 
 local function handleStateBagInitilization(source)
 	local plyState = Player(source).state
-	if not plyState.pmaVoiceInit then
-		plyState:set('radio', GetConvarInt('voice_defaultRadioVolume', 30), true)
-		plyState:set('call', GetConvarInt('voice_defaultCallVolume', 60), true)
-		plyState:set('submix', nil, true)
-		plyState:set('proximity', {}, true)
-		plyState:set('callChannel', 0, true)
-		plyState:set('radioChannels', {}, true)
+    if not plyState.pmaVoiceInit then
+        plyState:set('radio', GetConvarInt('voice_defaultRadioVolume', 60), true)
+        plyState:set('rr_radio', GetConvarInt('voice_defaultRadioVolume', 60), true)
+        plyState:set('call', GetConvarInt('voice_defaultCallVolume', 60), true)
+        plyState:set('submix', nil, true)
+        plyState:set('proximity', {}, true)
+        plyState:set('callChannel', 0, true)
+        plyState:set('radioChannels', {}, true)
         plyState:set('radioChannel', 0, true)
-		plyState:set('voiceIntent', 'speech', true)
-		plyState:set('pmaVoiceInit', true, false)
-	end
+        plyState:set('voiceIntent', 'speech', true)
+        plyState:set('pmaVoiceInit', true, false)
+    end
 
 	local assignedChannel = firstFreeChannel()
 	plyState:set('assignedChannel', assignedChannel, true)

@@ -1,3 +1,17 @@
+---@param source number the player to remove
+---@param radioChannel number the current channel to remove them from
+function RemovePlayerFromRadio(source, radioChannel)
+	Logger.verbose('[radio] Removed %s from radio %s', source, radioChannel)
+	Server.radioData[radioChannel] = Server.radioData[radioChannel] or {}
+	for player, _ in pairs(Server.radioData[radioChannel]) do
+		TriggerClientEvent('pma-voice:removePlayerFromRadio', player, source)
+	end
+	Server.radioData[radioChannel][source] = nil
+	Server.voiceData[source] = Server.voiceData[source] or Server.defaultTable(source)
+	Server.voiceData[source].radio = 0
+end
+
+if GetConvarInt('voice_enableRadios', 1) ~= 1 then return end
 local radioChecks = {}
 
 --- @param source number the source of the player
@@ -45,7 +59,7 @@ exports('overrideRadioNameGetter', overrideRadioNameGetter)
 ---@param source number the player to add to the channel
 ---@param radioChannel number the channel to set them to
 ---@return boolean wasAdded if the player was successfuly added to the radio channel, or if it failed.
-function AddPlayerToRadio(source, radioChannel)
+local function addPlayerToRadio(source, radioChannel)
 	if not canJoinChannel(source, radioChannel) then
 		TriggerClientEvent("pma-voice:radioChangeRejected", source)
 		TriggerClientEvent('pma-voice:removePlayerFromRadio', source, source)
@@ -63,19 +77,6 @@ function AddPlayerToRadio(source, radioChannel)
 	TriggerClientEvent('pma-voice:syncRadioData', source, Server.radioData[radioChannel],
 		GetConvarInt("voice_syncPlayerNames", 0) == 1 and plyName)
 	return true
-end
-
----@param source number the player to remove
----@param radioChannel number the current channel to remove them from
-function RemovePlayerFromRadio(source, radioChannel)
-	Logger.verbose('[radio] Removed %s from radio %s', source, radioChannel)
-	Server.radioData[radioChannel] = Server.radioData[radioChannel] or {}
-	for player, _ in pairs(Server.radioData[radioChannel]) do
-		TriggerClientEvent('pma-voice:removePlayerFromRadio', player, source)
-	end
-	Server.radioData[radioChannel][source] = nil
-	Server.voiceData[source] = Server.voiceData[source] or Server.defaultTable(source)
-	Server.voiceData[source].radio = 0
 end
 
 -- TODO: Implement this in a way that allows players to be on multiple channels
@@ -105,7 +106,7 @@ local function setPlayerRadio(source, _radioChannel)
 		if plyVoice.radio > 0 then
 			RemovePlayerFromRadio(source, plyVoice.radio)
 		end
-		local wasAdded = AddPlayerToRadio(source, radioChannel)
+		local wasAdded = addPlayerToRadio(source, radioChannel)
 		Player(source).state.radioChannel = wasAdded and radioChannel or 0
 	elseif radioChannel == 0 then
 		RemovePlayerFromRadio(source, plyVoice.radio)

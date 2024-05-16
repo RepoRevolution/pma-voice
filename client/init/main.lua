@@ -2,6 +2,7 @@ local mutedPlayers = {}
 
 local volumes = {
 	['radio'] = GetConvarInt('voice_defaultRadioVolume', 60) / 100,
+    ['rr_radio'] = GetConvarInt('voice_defaultRadioVolume', 60) / 100,
 	['call'] = GetConvarInt('voice_defaultCallVolume', 60) / 100,
 	['click_on'] = GetConvarInt('voice_onClickVolume', 10) / 100,
 	['click_off'] = GetConvarInt('voice_offClickVolume', 3) / 100,
@@ -150,7 +151,6 @@ function ToggleVoice(plySource, enabled, moduleType)
 	Logger.verbose('[main] Updating %s to talking: %s with submix %s', plySource, enabled, moduleType)
 	local distance = Client.currentTargets[plySource]
 	if enabled and (not distance or distance > 4.0) then
-		print(volumes[moduleType])
 		MumbleSetVolumeOverrideByServerId(plySource, enabled and volumes[moduleType])
 		if GetConvarInt('voice_enableSubmix', 1) == 1 then
 			if moduleType then
@@ -233,7 +233,7 @@ exports('toggleMutePlayer', toggleMutePlayer)
 ---@param type string what voice property you want to change (only takes 'radioEnabled' and 'micClicks')
 ---@param value any the value to set the type to.
 local function setVoiceProperty(type, value)
-	if type == "radioEnabled" then
+	if type == "radioEnabled" and GetConvarInt('voice_enableRadios', 1) == 1 then
 		Client.radioEnabled = value
 		HandleRadioEnabledChanged(value)
 
