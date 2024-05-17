@@ -15,10 +15,6 @@ exports('updateVoiceTargets', function(radioData)
     AddVoiceTargets(radioData, Client.callData)
 end)
 
-exports('toggleVoice', function(playerId, enabled)
-    ToggleVoice(playerId, enabled, 'rr_radio')
-end)
-
 exports('setTalkingOnRadio', function(playerId, talking)
     local enabled = talking or Client.callData[playerId]
     ToggleVoice(playerId, enabled, 'rr_radio')
