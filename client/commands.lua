@@ -73,5 +73,5 @@ RegisterCommand('cycleproximity', function()
 end, false)
 
 if Shared.gameVersion == 'fivem' then
-	RegisterKeyMapping('cycleproximity', 'Cycle Proximity', 'keyboard', GetConvar('voice_defaultCycle', 'F11'))
+	RegisterKeyMapping('cycleproximity', '[PMA] Cycle proximity', 'keyboard', GetConvar('voice_defaultCycle', 'F11'))
 end
